@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Our Special Journey ❤️</title>
+    <style>
+        :root {
+            --pink: #ff85a1;
+            --dark-pink: #ff4d6d;
+            --soft-bg: #fff0f3;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--soft-bg) 0%, #ffe5ec 100%);
+            font-family: 'Kanit', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            color: #4a4a4a;
+            /* ป้องกันการเลื่อนหน้าจอไปมาบนมือถือ */
+            touch-action: none;
+        }
+
+        .game-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(255, 77, 109, 0.15);
+            text-align: center;
+            width: 85%;
+            max-width: 400px;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .photo-frame {
+            width: 100%;
+            height: 250px; /* ล็อคความสูงให้พอดีกับหน้าจอมือถือส่วนใหญ่ */
+            border-radius: 15px;
+            overflow: hidden;
+            border: 4px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            background: #fff;
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        h2 { font-size: 1.1rem; margin: 5px 0; color: #333; line-height: 1.4; }
+        p { font-size: 0.9rem; margin: 0; }
+
+        button {
+            background: var(--dark-pink);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button:active { transform: scale(0.95); }
+
+        input {
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid var(--pink);
+            width: 90%;
+            align-self: center;
+            text-align: center;
+            font-size: 16px; /* ป้องกัน iOS auto-zoom เมื่อกดพิมพ์ */
+        }
+
+        #game-canvas {
+            background: #fff;
+            border-radius: 15px;
+            border: 2px dashed var(--pink);
+            width: 100%;
+            height: auto;
+            touch-action: none;
+        }
+
+        .hidden { display: none !important; }
+
+        #noBtn { position: fixed; z-index: 1000; background: #999; }
+
+        .heart-rain {
+            position: absolute;
+            animation: fall 3s linear forwards;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="game-card" id="start-screen">
+        <div class="photo-frame">
+            <img src="https://images2.imgbox.com/80/55/0ijPosuN_o.jpg" alt="Memory 1">
+        </div>
+        <h2>พร้อมจะไปผจญภัยหรือยังคะคุณ?</h2>
+        <p>เค้ามีอะไรสนุกๆ มาให้เล่นด้วยล่ะ...</p>
+        <button onclick="nextLevel(1)">เริ่มเกมกันเลย!</button>
+    </div>
+
+    <div class="game-card hidden" id="level-1">
+        <h2>ด่านที่ 1: เก็บหัวใจให้เค้าหน่อย</h2>
+        <p>จิ้มหัวใจให้ครบ 10 ดวงนะคะ!</p>
+        <canvas id="game-canvas" width="300" height="300"></canvas>
+        <div id="score" style="font-weight: 500; color: var(--dark-pink);">คะแนน: 0 / 10</div>
+    </div>
+
+    <div class="game-card hidden" id="level-2">
+        <div class="photo-frame">
+            <img src="https://images2.imgbox.com/9c/5f/kH24xxly_o.jpg" alt="Memory 2">
+        </div>
+        <h2>ด่านที่ 2: ทดสอบความทรงจำ ✨</h2>
+        <p><b>"คำชมแรกที่ Direct Story คือ...?"</b></p>
+        <input type="text" id="answer" placeholder="พิมพ์คำตอบที่นี่...">
+        <button onclick="checkAnswer()">ตอบเลย!</button>
+    </div>
+
+    <div class="game-card hidden" id="final-level">
+        <div class="photo-frame">
+            <img src="https://images2.imgbox.com/3b/60/OkOZLpz9_o.jpg" alt="Memory 3">
+        </div>
+        <h2 style="color: var(--dark-pink);">เป็นแฟนกับพลอยนะ? ✨</h2>
+        <div style="display: flex; justify-content: center; gap: 15px;">
+            <button id="yesBtn" onclick="celebrate()">ตกลงค่ะ!</button>
+            <button id="noBtn" onmouseover="moveNo()" onclick="moveNo()">ไม่เป็น</button>
+        </div>
+    </div>
+
+    <div class="game-card hidden" id="success-screen">
+        <div class="photo-frame">
+             <img src="https://images2.imgbox.com/80/55/0ijPosuN_o.jpg" alt="Happy">
+        </div>
+        <h2 style="color: var(--dark-pink);">เย้! ❤️👫</h2>
+        <p style="font-size: 0.85rem;">บันทึก: วันนี้ได้เป็นแฟนกันแล้วนะคะ</p>
+        <p style="font-size: 0.8rem;">อยู่ด้วยกันไปนานๆ นะคะคนเก่ง</p>
+    </div>
+
+    <script>
+        let score = 0;
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        let hearts = [];
+
+        function nextLevel(lv) {
+            document.querySelectorAll('.game-card').forEach(el => el.classList.add('hidden'));
+            if(lv === 1) {
+                document.getElementById('level-1').classList.remove('hidden');
+                startHeartGame();
+            } else if(lv === 2) {
+                document.getElementById('level-2').classList.remove('hidden');
+            } else if(lv === 3) {
+                document.getElementById('final-level').classList.remove('hidden');
+            }
+        }
+
+        function startHeartGame() {
+            function spawnHeart() {
+                if(score < 10) {
+                    hearts.push({ 
+                        x: Math.random() * (canvas.width - 40) + 20, 
+                        y: -30, 
+                        speed: 2 + Math.random() * 2,
+                        size: 30
+                    });
+                    setTimeout(spawnHeart, 800);
+                }
+            }
+            spawnHeart();
+            updateCanvas();
+        }
+
+        function updateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hearts.forEach((h, i) => {
+                h.y += h.speed;
+                ctx.font = `${h.size}px Arial`;
+                ctx.fillText("❤️", h.x, h.y);
+                if(h.y > canvas.height + 50) hearts.splice(i, 1);
+            });
+            if(score < 10) requestAnimationFrame(updateCanvas);
+        }
+
+        // รองรับทั้งการคลิกและการจิ้มบนมือถือ
+        function handleInteraction(e) {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (clientX - rect.left) * scaleX;
+            const y = (clientY - rect.top) * scaleY;
+            
+            hearts.forEach((h, i) => {
+                if(Math.abs(x - h.x) < 40 && Math.abs(y - h.y) < 40) {
+                    hearts.splice(i, 1);
+                    score++;
+                    document.getElementById('score').innerText = `คะแนน: ${score} / 10`;
+                    if(score >= 10) setTimeout(() => nextLevel(2), 500);
+                }
+            });
+        }
+
+        canvas.addEventListener('touchstart', handleInteraction);
+        canvas.addEventListener('mousedown', handleInteraction);
+
+        function checkAnswer() {
+            const ans = document.getElementById('answer').value.trim();
+            if(ans === 'ขอแอบชมนะคะว่าพี่สวยอ่ะ') {
+                alert('จำแม่นมากค่ะ! 😊');
+                nextLevel(3);
+            } else {
+                alert('ลองทายใหม่นะคะ (ขึ้นต้นว่า ขอแอบ...)');
+            }
+        }
+
+        function moveNo() {
+            const btn = document.getElementById('noBtn');
+            const x = Math.random() * (window.innerWidth - 80);
+            const y = Math.random() * (window.innerHeight - 40);
+            btn.style.left = x + 'px';
+            btn.style.top = y + 'px';
+        }
+
+        function celebrate() {
+            document.querySelectorAll('.game-card').forEach(el => el.classList.add('hidden'));
+            document.getElementById('success-screen').classList.remove('hidden');
+            setInterval(rainHeart, 250);
+        }
+
+        function rainHeart() {
+            const h = document.createElement('div');
+            h.classList.add('heart-rain');
+            h.innerHTML = '❤️';
+            h.style.left = Math.random() * 100 + 'vw';
+            h.style.top = '-50px';
+            h.style.fontSize = (15 + Math.random() * 20) + 'px';
+            document.body.appendChild(h);
+            setTimeout(() => h.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
